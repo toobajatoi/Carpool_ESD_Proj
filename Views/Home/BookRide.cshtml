@@ -45,26 +45,25 @@
         else
         {
         <dl class="row">
+            @{
+                var driverInfo = Model.myUsers?.FirstOrDefault(u => u.UserId == rideRequest.DriverId);
+            }
             <dt class="col-sm-2">Request ID</dt>
             <dd class="col-sm-10">@rideRequest.RequestId</dd>
 
             <dt class="col-sm-2">Ride ID</dt>
             <dd class="col-sm-10">@rideRequest.RideId</dd>
 
-            <dt class="col-sm-2">Driver ID</dt>
+            <dt class="col-sm-2">Driver</dt>
             <dd class="col-sm-10">
-                @rideRequest.DriverId
-                @{
-                    var driverInfo = Model.myUsers?.FirstOrDefault(u => u.UserId == rideRequest.DriverId);
-                    if (driverInfo != null)
-                    {
-                        <div>Name: @driverInfo.Name</div>
-                        <div>NU_ID: @driverInfo.NuId</div>
-                    }
-                    else
-                    {
-                        <div>Driver information not available.</div>
-                    }
+                @if (driverInfo != null)
+                {
+                    <div><strong>Name:</strong> @driverInfo.Name</div>
+                    <div><strong>NU_ID:</strong> @driverInfo.NuId</div>
+                }
+                else
+                {
+                    <div>Driver information not available.</div>
                 }
             </dd>
 
@@ -118,6 +117,12 @@
             </dd>
         </dl>
         <div class="mt-3">
+            @if (driverInfo != null)
+            {
+                <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#messageModal" data-driver-id="@rideRequest.DriverId" data-driver-name="@driverInfo.Name">
+                    Message Driver
+                </button>
+            }
             <a asp-action="Main_Page" class="btn btn-secondary">Back to Main Page</a>
         </div>
         }
@@ -131,3 +136,41 @@
         </div>
     }
 </div>
+
+<!-- Message Modal -->
+<div class="modal fade" id="messageModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Send Message</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="SendMessage" method="post">
+                <div class="modal-body">
+                    <input type="hidden" name="receiverId" id="messageReceiverId" />
+                    <input type="hidden" name="rideRequestId" value="@(Model?.myRideRequest?.FirstOrDefault()?.RequestId)" />
+                    <div class="form-group mb-3">
+                        <label class="form-label">Message</label>
+                        <textarea name="content" class="form-control" rows="4" required placeholder="Type your message here..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Send Message</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#messageModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+                var driverId = button.data('driver-id');
+                $('#messageReceiverId').val(driverId);
+            });
+        });
+    </script>
+}

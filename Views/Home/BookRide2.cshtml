@@ -38,20 +38,19 @@
                     }
                 </dd>
 
-                <dt class="col-sm-2">Requester ID</dt>
+                <dt class="col-sm-2">Requester</dt>
                 <dd class="col-sm-10">
-                    @rideRequest.RequesterId
                     @{
                         var requesterInfo = Model.myUsers?.FirstOrDefault(u => u.UserId == rideRequest.RequesterId);
-                        if (requesterInfo != null)
-                        {
-                            <div>Name: @requesterInfo.Name</div>
-                            <div>NU_ID: @requesterInfo.NuId</div>
-                        }
-                        else
-                        {
-                            <div>Requester information not available.</div>
-                        }
+                    }
+                    @if (requesterInfo != null)
+                    {
+                        <div><strong>Name:</strong> @requesterInfo.Name</div>
+                        <div><strong>NU_ID:</strong> @requesterInfo.NuId</div>
+                    }
+                    else
+                    {
+                        <div>Requester information not available.</div>
                     }
                 </dd>
 
@@ -78,10 +77,22 @@
             @if (rideRequest.Status != "Accepted")
             {
                 <a class="btn btn-success" asp-action="AcceptRideRequest" asp-route-requestId="@rideRequest.RequestId">Accept</a>
+                @if (requesterInfo != null)
+                {
+                    <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#messageModal" data-requester-id="@rideRequest.RequesterId" data-requester-name="@requesterInfo.Name">
+                        Message Passenger
+                    </button>
+                }
             }
             else
             {
                 <span class="badge bg-success">Accepted</span>
+                @if (requesterInfo != null)
+                {
+                    <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#messageModal" data-requester-id="@rideRequest.RequesterId" data-requester-name="@requesterInfo.Name">
+                        Message Passenger
+                    </button>
+                }
             }
             <br /><br />
         }
@@ -91,3 +102,43 @@
         <p>No ride request details available.</p>
     }
 </div>
+
+<!-- Message Modal -->
+<div class="modal fade" id="messageModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Send Message</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="SendMessage" method="post">
+                <div class="modal-body">
+                    <input type="hidden" name="receiverId" id="messageReceiverId" />
+                    <input type="hidden" name="rideRequestId" id="messageRideRequestId" />
+                    <div class="form-group mb-3">
+                        <label class="form-label">Message</label>
+                        <textarea name="content" class="form-control" rows="4" required placeholder="Type your message here..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Send Message</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#messageModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+                var requesterId = button.data('requester-id');
+                var rideRequestId = '@(Model?.myRideRequest?.FirstOrDefault()?.RequestId)';
+                $('#messageReceiverId').val(requesterId);
+                $('#messageRideRequestId').val(rideRequestId);
+            });
+        });
+    </script>
+}

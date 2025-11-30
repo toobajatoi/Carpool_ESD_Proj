@@ -34,4 +34,34 @@ public partial class User
     public virtual ICollection<RideDetail> Rides { get; set; } = new List<RideDetail>();
 
     public virtual ICollection<DriverProfile> DriverProfiles { get; set; } = new List<DriverProfile>();
+
+    public virtual ICollection<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
+
+    public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+
+    public virtual ICollection<Message> SentMessages { get; set; } = new List<Message>();
+
+    public virtual ICollection<Message> ReceivedMessages { get; set; } = new List<Message>();
+
+    public virtual ICollection<FavoriteRide> FavoriteRides { get; set; } = new List<FavoriteRide>();
+
+    public virtual ICollection<RideHistory> DriverHistories { get; set; } = new List<RideHistory>();
+
+    public virtual ICollection<RideHistory> PassengerHistories { get; set; } = new List<RideHistory>();
+
+    public virtual ICollection<Cancellation> Cancellations { get; set; } = new List<Cancellation>();
+
+    public virtual ICollection<Complaint> ReportedComplaints { get; set; } = new List<Complaint>();
+
+    public virtual ICollection<Complaint> ComplaintsAgainst { get; set; } = new List<Complaint>();
+
+    public virtual ICollection<EmergencyContact> EmergencyContacts { get; set; } = new List<EmergencyContact>();
+
+    public virtual ICollection<Rating> GivenRatings { get; set; } = new List<Rating>();
+
+    public virtual ICollection<Rating> ReceivedRatings { get; set; } = new List<Rating>();
+
+    public virtual ICollection<Schedule> Schedules { get; set; } = new List<Schedule>();
+
+    public virtual ICollection<Waitlist> Waitlists { get; set; } = new List<Waitlist>();
 }

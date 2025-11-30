@@ -182,7 +182,12 @@
                                     }
                                     @if (canBook)
                                     {
-                                        <a asp-action="BookRide" asp-route-rideid="@detail.RideId" class="btn btn-outline-secondary">Book</a>
+                                        <div class="d-flex gap-2">
+                                            <a asp-action="BookRide" asp-route-rideid="@detail.RideId" class="btn btn-outline-secondary">Book</a>
+                                            <button type="button" class="btn btn-outline-danger favorite-btn" data-ride-id="@detail.RideId" title="Add to Favorites">
+                                                <span>❤️</span>
+                                            </button>
+                                        </div>
                                     }
                                     else if (detail.AvailableSeats <= 0)
                                     {
@@ -247,5 +252,41 @@
     <!--  bootstrap ke script ko rehne deina, backend ke scripts baad mein add karenge -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.favorite-btn').on('click', function() {
+                const rideId = $(this).data('ride-id');
+                const btn = $(this);
+                
+                if (!rideId) {
+                    alert('Invalid ride ID');
+                    return;
+                }
+                
+                $.ajax({
+                    url: '/Home/AddToFavorites',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    data: JSON.stringify({ rideId: rideId }),
+                    success: function(response) {
+                        if (response && response.success) {
+                            btn.find('span').text('❤️');
+                            btn.addClass('active');
+                            alert(response.message || 'Added to favorites!');
+                        } else {
+                            alert(response ? (response.message || 'Could not add to favorites') : 'Could not add to favorites');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                        alert('An error occurred. Please try again.');
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

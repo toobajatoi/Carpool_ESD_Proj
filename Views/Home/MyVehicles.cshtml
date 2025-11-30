@@ -1,0 +1,76 @@
+@model IEnumerable<Carpool_DB_Proj.Models.Vehicle>
+
+@{
+    ViewData["Title"] = "My Vehicles";
+    Layout = "_Layout";
+}
+
+<h1>My Vehicles</h1>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<p>
+    <a asp-action="AddVehicle" class="btn btn-primary">Add New Vehicle</a>
+</p>
+
+@if (Model != null && Model.Any())
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Make</th>
+                <th>Model</th>
+                <th>Year</th>
+                <th>License Plate</th>
+                <th>Color</th>
+                <th>Capacity</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var vehicle in Model)
+            {
+                <tr>
+                    <td>@vehicle.Make</td>
+                    <td>@vehicle.Model</td>
+                    <td>@vehicle.Year</td>
+                    <td>@vehicle.LicensePlate</td>
+                    <td>@vehicle.Color</td>
+                    <td>@vehicle.Capacity</td>
+                    <td>@vehicle.VehicleType</td>
+                    <td>
+                        @if (vehicle.IsActive)
+                        {
+                            <span class="badge bg-success">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Inactive</span>
+                        }
+                    </td>
+                    <td>
+                        <span class="text-muted">Edit (Coming Soon)</span>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="alert alert-info">
+        <p>You haven't added any vehicles yet. <a asp-action="AddVehicle">Add your first vehicle</a> to start offering rides!</p>
+    </div>
+}
+
+<div>
+    <a asp-action="Main_Page" class="btn btn-secondary">Back to Main Page</a>
+</div>

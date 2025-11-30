@@ -1,0 +1,74 @@
+@model IEnumerable<Carpool_DB_Proj.Models.Notification>
+
+@{
+    ViewData["Title"] = "Notifications";
+    Layout = "_Layout";
+}
+
+<h1>Notifications</h1>
+
+@if (Model != null && Model.Any())
+{
+    <div class="list-group">
+        @foreach (var notification in Model)
+        {
+            <div class="list-group-item @(notification.IsRead ? "read" : "list-group-item-primary")" data-notification-id="@notification.NotificationId">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">
+                        @if (!notification.IsRead)
+                        {
+                            <span class="badge bg-primary">New</span>
+                        }
+                        @notification.Title
+                    </h5>
+                    <small>@notification.CreatedDate.ToString("MMM dd, yyyy HH:mm")</small>
+                </div>
+                <p class="mb-1">@notification.Message</p>
+                <small>
+                    <span class="badge bg-@(notification.Type == "Error" ? "danger" : notification.Type == "Warning" ? "warning" : notification.Type == "Success" ? "success" : "info")">
+                        @notification.Type
+                    </span>
+                </small>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="alert alert-info">
+        <p>You have no notifications.</p>
+    </div>
+}
+
+<div class="mt-3">
+    <a asp-action="Main_Page" class="btn btn-secondary">Back to Main Page</a>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('.list-group-item').on('click', function() {
+                const notificationId = $(this).data('notification-id');
+                const item = $(this);
+                
+                if (notificationId && !item.hasClass('read')) {
+                    $.ajax({
+                        url: '/Home/MarkNotificationRead',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ notificationId: parseInt(notificationId) }),
+                        success: function(response) {
+                            if (response && response.success) {
+                                item.removeClass('list-group-item-primary');
+                                item.addClass('read');
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Error:', error);
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}

@@ -24,6 +24,35 @@ namespace Carpool_DB_Proj.Controllers
             rideDetailDAL_obj = new RideDetailDAL();
             rideRequestDAL_obj = new RideRequestDAL();
             locationFilterDAL_obj = new LocationFilterDAL();
+        }
+
+        // Helper method to set common ViewBag values
+        private void SetViewBagForAuthenticatedUser()
+        {
+            if (HttpContext.Session.GetString("UserSession") != null)
+            {
+                ViewBag.mySession = HttpContext.Session.GetString("UserSession").ToString();
+                int? sessionId = HttpContext.Session.GetInt32("SessionId");
+                if (sessionId.HasValue)
+                {
+                    var loginSession = context.LoginSessions.FirstOrDefault(s => s.SessionId == sessionId.Value);
+                    if (loginSession != null)
+                    {
+                        ViewBag.SessionUserId = loginSession.UserId;
+                        // Safely check if Notifications table exists before querying
+                        try
+                        {
+                            ViewBag.UnreadNotificationCount = context.Notifications
+                                .Count(n => n.UserId == loginSession.UserId && !n.IsRead);
+                        }
+                        catch
+                        {
+                            // Table doesn't exist yet - set to 0
+                            ViewBag.UnreadNotificationCount = 0;
+                        }
+                    }
+                }
+            }
         }   
 
         public IActionResult Index()
@@ -90,7 +119,7 @@ namespace Carpool_DB_Proj.Controllers
             {
                 return RedirectToAction("Login");
             }
-            ViewBag.mySession = HttpContext.Session.GetString("UserSession").ToString();
+            SetViewBagForAuthenticatedUser();
             int? sessionId = HttpContext.Session.GetInt32("SessionId");
             
             if (!sessionId.HasValue)
@@ -188,6 +217,9 @@ namespace Carpool_DB_Proj.Controllers
                     if (loginSession != null)
                     {
                         ViewBag.SessionUserId = loginSession.UserId;
+                        // Get unread notification count
+                        ViewBag.UnreadNotificationCount = context.Notifications
+                            .Count(n => n.UserId == loginSession.UserId && !n.IsRead);
                     }
                 }
                 
@@ -271,7 +303,7 @@ namespace Carpool_DB_Proj.Controllers
         {
             if (HttpContext.Session.GetString("UserSession") != null)
             {
-                ViewBag.mySession = HttpContext.Session.GetString("UserSession").ToString();
+                SetViewBagForAuthenticatedUser();
             }
             return View();
         }
@@ -322,7 +354,7 @@ namespace Carpool_DB_Proj.Controllers
                 return RedirectToAction("Login");
             }
             
-            ViewBag.mySession = HttpContext.Session.GetString("UserSession").ToString();
+            SetViewBagForAuthenticatedUser();
             
             int? sessionId = HttpContext.Session.GetInt32("SessionId");
             if (!sessionId.HasValue)
@@ -436,6 +468,22 @@ namespace Carpool_DB_Proj.Controllers
             await context.RideRequests.AddAsync(rideRequestobj);
             await context.SaveChangesAsync();
 
+            // Create notification for the driver
+            var notification = new Notification
+            {
+                UserId = ridedetailobj.UserId,
+                Title = "New Ride Request",
+                Message = $"You have a new ride request from a passenger.",
+                Type = "Info",
+                IsRead = false,
+                CreatedDate = DateTime.Now,
+                RelatedEntityType = "RideRequest",
+                RelatedEntityId = rideRequestobj.RequestId
+            };
+
+            await context.Notifications.AddAsync(notification);
+            await context.SaveChangesAsync();
+
             TempData["SuccessMessage"] = "Ride request submitted successfully!";
             obj.myRideRequest = new List<RideRequest> { rideRequestobj };
             return View(obj);
@@ -469,8 +517,23 @@ namespace Carpool_DB_Proj.Controllers
                 rideDetails.AvailableSeats = rideDetails.AvailableSeats - 1;
             }
 
+            // Create notification for the requester
+            var notification = new Notification
+            {
+                UserId = rideRequest.RequesterId,
+                Title = "Ride Request Accepted",
+                Message = $"Your ride request has been accepted by the driver.",
+                Type = "Success",
+                IsRead = false,
+                CreatedDate = DateTime.Now,
+                RelatedEntityType = "RideRequest",
+                RelatedEntityId = rideRequest.RequestId
+            };
+
+            await context.Notifications.AddAsync(notification);
             await context.SaveChangesAsync();
 
+            TempData["SuccessMessage"] = "Ride request accepted successfully!";
             return RedirectToAction("BookRide");
         }
 
@@ -499,7 +562,347 @@ namespace Carpool_DB_Proj.Controllers
 
         public IActionResult Privacy()
         {
+            if (HttpContext.Session.GetString("UserSession") != null)
+            {
+                ViewBag.mySession = HttpContext.Session.GetString("UserSession").ToString();
+            }
             return View();
+        }
+
+        // ========== VEHICLE MANAGEMENT ==========
+        [HttpGet]
+        public IActionResult MyVehicles()
+        {
+            if (HttpContext.Session.GetString("UserSession") == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            SetViewBagForAuthenticatedUser();
+            int? sessionId = HttpContext.Session.GetInt32("SessionId");
+            
+            if (!sessionId.HasValue)
+            {
+                return RedirectToAction("Login");
+            }
+
+            var loginSession = context.LoginSessions.FirstOrDefault(s => s.SessionId == sessionId.Value);
+            if (loginSession == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            var vehicles = context.Vehicles.Where(v => v.UserId == loginSession.UserId).ToList();
+            return View(vehicles);
+        }
+
+        [HttpGet]
+        public IActionResult AddVehicle()
+        {
+            if (HttpContext.Session.GetString("UserSession") == null)
+            {
+                return RedirectToAction("Login");
+            }
+            SetViewBagForAuthenticatedUser();
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddVehicle(Vehicle vehicle)
+        {
+            if (HttpContext.Session.GetString("UserSession") == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            int? sessionId = HttpContext.Session.GetInt32("SessionId");
+            if (!sessionId.HasValue)
+            {
+                return RedirectToAction("Login");
+            }
+
+            var loginSession = context.LoginSessions.FirstOrDefault(s => s.SessionId == sessionId.Value);
+            if (loginSession == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            if (ModelState.IsValid)
+            {
+                vehicle.UserId = loginSession.UserId;
+                vehicle.CreatedDate = DateTime.Now;
+                vehicle.IsActive = true;
+
+                await context.Vehicles.AddAsync(vehicle);
+                await context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "Vehicle added successfully!";
+                return RedirectToAction("MyVehicles");
+            }
+
+            SetViewBagForAuthenticatedUser();
+            return View(vehicle);
+        }
+
+        // ========== NOTIFICATION MANAGEMENT ==========
+        [HttpGet]
+        public IActionResult Notifications()
+        {
+            if (HttpContext.Session.GetString("UserSession") == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            ViewBag.mySession = HttpContext.Session.GetString("UserSession").ToString();
+            int? sessionId = HttpContext.Session.GetInt32("SessionId");
+            
+            if (!sessionId.HasValue)
+            {
+                return RedirectToAction("Login");
+            }
+
+            var loginSession = context.LoginSessions.FirstOrDefault(s => s.SessionId == sessionId.Value);
+            if (loginSession == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            var notifications = context.Notifications
+                .Where(n => n.UserId == loginSession.UserId)
+                .OrderByDescending(n => n.CreatedDate)
+                .ToList();
+
+            ViewBag.UnreadNotificationCount = notifications.Count(n => !n.IsRead);
+            return View(notifications);
+        }
+
+        [HttpPost]
+        [IgnoreAntiforgeryToken]
+        public async Task<IActionResult> MarkNotificationRead([FromBody] NotificationRequest request)
+        {
+            int notificationId = request.notificationId;
+            var notification = await context.Notifications.FindAsync(notificationId);
+            if (notification != null)
+            {
+                notification.IsRead = true;
+                await context.SaveChangesAsync();
+            }
+            return Json(new { success = true });
+        }
+
+        // ========== MESSAGE MANAGEMENT ==========
+        [HttpGet]
+        public IActionResult Messages()
+        {
+            if (HttpContext.Session.GetString("UserSession") == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            SetViewBagForAuthenticatedUser();
+            int? sessionId = HttpContext.Session.GetInt32("SessionId");
+            
+            if (!sessionId.HasValue)
+            {
+                return RedirectToAction("Login");
+            }
+
+            var loginSession = context.LoginSessions.FirstOrDefault(s => s.SessionId == sessionId.Value);
+            if (loginSession == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            var messages = context.Messages
+                .Where(m => m.SenderId == loginSession.UserId || m.ReceiverId == loginSession.UserId)
+                .Include(m => m.Sender)
+                .Include(m => m.Receiver)
+                .OrderByDescending(m => m.SentDate)
+                .ToList();
+
+            return View(messages);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SendMessage(int receiverId, int? rideRequestId, string content)
+        {
+            if (HttpContext.Session.GetString("UserSession") == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            int? sessionId = HttpContext.Session.GetInt32("SessionId");
+            if (!sessionId.HasValue)
+            {
+                return RedirectToAction("Login");
+            }
+
+            var loginSession = context.LoginSessions.FirstOrDefault(s => s.SessionId == sessionId.Value);
+            if (loginSession == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            var message = new Message
+            {
+                SenderId = loginSession.UserId,
+                ReceiverId = receiverId,
+                RideRequestId = rideRequestId,
+                Content = content,
+                SentDate = DateTime.Now,
+                IsRead = false
+            };
+
+            await context.Messages.AddAsync(message);
+            await context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Message sent successfully!";
+            return RedirectToAction("Messages");
+        }
+
+        // ========== FAVORITE RIDES ==========
+        [HttpPost]
+        [IgnoreAntiforgeryToken]
+        public async Task<IActionResult> AddToFavorites([FromBody] FavoriteRequest request)
+        {
+            if (HttpContext.Session.GetString("UserSession") == null)
+            {
+                return Json(new { success = false, message = "Please login first" });
+            }
+
+            int? sessionId = HttpContext.Session.GetInt32("SessionId");
+            if (!sessionId.HasValue)
+            {
+                return Json(new { success = false, message = "Session expired" });
+            }
+
+            var loginSession = context.LoginSessions.FirstOrDefault(s => s.SessionId == sessionId.Value);
+            if (loginSession == null)
+            {
+                return Json(new { success = false, message = "Session expired" });
+            }
+
+            int rideId = request.rideId;
+            var existing = context.FavoriteRides
+                .FirstOrDefault(f => f.UserId == loginSession.UserId && f.RideId == rideId);
+
+            if (existing != null)
+            {
+                return Json(new { success = false, message = "Already in favorites" });
+            }
+
+            var favorite = new FavoriteRide
+            {
+                UserId = loginSession.UserId,
+                RideId = rideId,
+                CreatedDate = DateTime.Now
+            };
+
+            await context.FavoriteRides.AddAsync(favorite);
+            await context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Added to favorites" });
+        }
+
+        [HttpGet]
+        public IActionResult FavoriteRides()
+        {
+            if (HttpContext.Session.GetString("UserSession") == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            SetViewBagForAuthenticatedUser();
+            int? sessionId = HttpContext.Session.GetInt32("SessionId");
+            
+            if (!sessionId.HasValue)
+            {
+                return RedirectToAction("Login");
+            }
+
+            var loginSession = context.LoginSessions.FirstOrDefault(s => s.SessionId == sessionId.Value);
+            if (loginSession == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            var favorites = context.FavoriteRides
+                .Where(f => f.UserId == loginSession.UserId)
+                .Include(f => f.Ride)
+                    .ThenInclude(r => r.User)
+                .OrderByDescending(f => f.CreatedDate)
+                .ToList();
+
+            return View(favorites);
+        }
+
+        // ========== EMERGENCY CONTACTS ==========
+        [HttpGet]
+        public IActionResult EmergencyContacts()
+        {
+            if (HttpContext.Session.GetString("UserSession") == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            SetViewBagForAuthenticatedUser();
+            int? sessionId = HttpContext.Session.GetInt32("SessionId");
+            
+            if (!sessionId.HasValue)
+            {
+                return RedirectToAction("Login");
+            }
+
+            var loginSession = context.LoginSessions.FirstOrDefault(s => s.SessionId == sessionId.Value);
+            if (loginSession == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            var contacts = context.EmergencyContacts
+                .Where(e => e.UserId == loginSession.UserId)
+                .ToList();
+
+            return View(contacts);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddEmergencyContact(EmergencyContact contact)
+        {
+            if (HttpContext.Session.GetString("UserSession") == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            int? sessionId = HttpContext.Session.GetInt32("SessionId");
+            if (!sessionId.HasValue)
+            {
+                return RedirectToAction("Login");
+            }
+
+            var loginSession = context.LoginSessions.FirstOrDefault(s => s.SessionId == sessionId.Value);
+            if (loginSession == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            if (ModelState.IsValid)
+            {
+                contact.UserId = loginSession.UserId;
+                contact.CreatedDate = DateTime.Now;
+
+                await context.EmergencyContacts.AddAsync(contact);
+                await context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "Emergency contact added successfully!";
+                return RedirectToAction("EmergencyContacts");
+            }
+
+            SetViewBagForAuthenticatedUser();
+            return View("EmergencyContacts", context.EmergencyContacts.Where(e => e.UserId == loginSession.UserId).ToList());
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

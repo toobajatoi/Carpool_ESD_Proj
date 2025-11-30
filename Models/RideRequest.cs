@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace Carpool_DB_Proj.Models;
@@ -24,4 +24,10 @@ public partial class RideRequest
     public virtual User Requester { get; set; } = null!;
 
     public virtual RideDetail Ride { get; set; } = null!;
+
+    public virtual ICollection<Message> Messages { get; set; } = new List<Message>();
+
+    public virtual Cancellation? Cancellation { get; set; }
+
+    public virtual ICollection<RideHistory> RideHistories { get; set; } = new List<RideHistory>();
 }

@@ -1,0 +1,61 @@
+@model IEnumerable<Carpool_DB_Proj.Models.Message>
+
+@{
+    ViewData["Title"] = "Messages";
+    Layout = "_Layout";
+}
+
+<h1>Messages</h1>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@{
+    int? currentUserId = ViewBag.SessionUserId as int?;
+}
+
+@if (Model != null && Model.Any())
+{
+    <div class="list-group">
+        @foreach (var message in Model)
+        {
+            <div class="list-group-item @(message.IsRead ? "" : "list-group-item-primary")">
+                <div class="d-flex w-100 justify-content-between">
+                    <div>
+                        <h5 class="mb-1">
+                            @if (currentUserId.HasValue && currentUserId.Value == message.SenderId)
+                            {
+                                <span>To: @(message.Receiver?.Name ?? "Unknown")</span>
+                            }
+                            else
+                            {
+                                <span>From: @(message.Sender?.Name ?? "Unknown")</span>
+                                @if (!message.IsRead)
+                                {
+                                    <span class="badge bg-primary">New</span>
+                                }
+                            }
+                        </h5>
+                        <p class="mb-1">@message.Content</p>
+                    </div>
+                    <small>@message.SentDate.ToString("MMM dd, yyyy HH:mm")</small>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="alert alert-info">
+        <p>You have no messages.</p>
+    </div>
+}
+
+<div class="mt-3">
+    <a asp-action="Main_Page" class="btn btn-secondary">Back to Main Page</a>
+</div>
