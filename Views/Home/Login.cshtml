@@ -1,0 +1,67 @@
+@model Carpool_DB_Proj.Models.User
+
+@{
+    ViewData["Title"] = "Login";
+    Layout = "_Layoutlogin";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="~/css/style.css">
+</head>
+<body>
+    @* <div class="grid"> *@
+    <div class="login_page_image_div">
+        <img class="login_page_img" src="https://plugin.markaimg.com/public/7b18ddfc/m1UmBe40bLmLCFizmT9bsUCfHdH7OW.png" alt="car_pool_pic">
+    </div>
+
+    <div class="login_info_1">
+        <div class="login_info_2">
+            <form asp-action="Login">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <h2>Welcome to the Fastpool!</h2>
+                <br>
+                <h6>Join us in finding your perfect ride to class today!</h6>
+                <br><br>
+                <h5><label asp-for="Email" class="control-label"></label></h5>
+                <br>
+                <div class="input-group input-group-lg">
+                    <input asp-for="Email" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-lg">
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+                <br><br>
+
+                <h5><label asp-for="Password" class="control-label"></label></h5>
+                <br>
+                <div class="input-group input-group-lg">
+                    <input asp-for="Password" type="password" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-lg">
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+
+                <br>
+                <a class="a_links" href="">Forgot Password?</a>
+                <br>
+                <br>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-primary" type="submit">Login</button>
+                </div>
+                <br><br>
+                <div class="Registration_div">
+                    <a class="a_links" asp-controller="Home" asp-action="Register">Don't have an account? Register here!</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

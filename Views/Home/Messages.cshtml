@@ -1,0 +1,303 @@
+@model IEnumerable<Carpool_DB_Proj.Models.Message>
+@using Carpool_DB_Proj.Models
+
+@{
+    ViewData["Title"] = "Messages";
+    Layout = "_Layout";
+    var conversations = ViewBag.Conversations as List<ConversationViewModel> ?? new List<ConversationViewModel>();
+    int? currentUserId = ViewBag.CurrentUserId as int?;
+    int? selectedConversationId = ViewBag.SelectedConversationId as int?;
+}
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-md-4 border-end">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4>Conversations</h4>
+                <button class="btn btn-sm btn-outline-secondary" onclick="refreshConversations()">
+                    <i class="bi bi-arrow-clockwise"></i> Refresh
+                </button>
+            </div>
+            <div class="list-group" id="conversationsList">
+                @if (conversations != null && conversations.Any())
+                {
+                    @foreach (var conv in conversations)
+                    {
+                        <a href="@Url.Action("Messages", new { conversationId = conv.UserId })" 
+                           class="list-group-item list-group-item-action @(selectedConversationId.HasValue && selectedConversationId.Value == conv.UserId ? "active" : "")">
+                            <div class="d-flex w-100 justify-content-between">
+                                <div class="d-flex align-items-center">
+                                    <img src="~/images/user.png" width="40" height="40" class="rounded-circle me-2" alt="User" />
+                                    <div>
+                                        <h6 class="mb-0">@(conv.User?.Name ?? "Unknown User")</h6>
+                                        <small class="text-muted">@(conv.LastMessage?.Content ?? "")</small>
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    @if (conv.UnreadCount > 0)
+                                    {
+                                        <span class="badge bg-danger">@conv.UnreadCount</span>
+                                    }
+                                    <br />
+                                    <small class="text-muted">@(conv.LastMessage?.SentDate.ToString("MMM dd") ?? "")</small>
+                                </div>
+                            </div>
+                        </a>
+                    }
+                }
+                else
+                {
+                    <div class="alert alert-info">No conversations yet. Start messaging from a ride request!</div>
+                }
+            </div>
+        </div>
+        <div class="col-md-8">
+            @if (selectedConversationId.HasValue && conversations != null && conversations.Any())
+            {
+                var selectedUser = conversations.FirstOrDefault(c => c.UserId == selectedConversationId.Value);
+                <div class="chat-container">
+                    <div class="chat-header border-bottom p-3">
+                        <div class="d-flex align-items-center">
+                            <img src="~/images/user.png" width="40" height="40" class="rounded-circle me-2" alt="User" />
+                            <div>
+                                <h5 class="mb-0">@(selectedUser?.User?.Name ?? "Unknown User")</h5>
+                                <small class="text-muted" id="typingIndicator" style="display: none;">typing...</small>
+                                <small class="text-muted" id="onlineStatus">Online</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-messages p-3" id="chatMessages" style="height: 400px; overflow-y: auto;">
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var message in Model)
+                            {
+                                bool isSent = currentUserId.HasValue && message.SenderId == currentUserId.Value;
+                                <div class="message @(isSent ? "sent" : "received") mb-3">
+                                    <div class="message-content @(isSent ? "bg-primary text-white" : "bg-light") p-2 rounded">
+                                        <p class="mb-1">@message.Content</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="@(isSent ? "text-white-50" : "text-muted")">
+                                                @message.SentDate.ToString("MMM dd, yyyy HH:mm")
+                                            </small>
+                                            @if (isSent)
+                                            {
+                                                <small class="text-white-50">
+                                                    @if (message.IsRead)
+                                                    {
+                                                        <span>✓✓ Read</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span>✓ Sent</span>
+                                                    }
+                                                </small>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="text-center text-muted mt-5">
+                                <p>No messages yet. Start the conversation!</p>
+                            </div>
+                        }
+                    </div>
+                    <div class="chat-input border-top p-3">
+                        <form id="messageForm" onsubmit="sendMessage(event)">
+                            <div class="input-group">
+                                <input type="hidden" id="receiverId" value="@(selectedConversationId.HasValue ? selectedConversationId.Value.ToString() : "0")" />
+                                <input type="text" class="form-control" id="messageInput" placeholder="Type a message..." required />
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="bi bi-send"></i> Send
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="text-center mt-5">
+                    <i class="bi bi-chat-dots" style="font-size: 4rem; color: #ccc;"></i>
+                    <h4 class="mt-3 text-muted">Select a conversation to start messaging</h4>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .chat-container {
+        display: flex;
+        flex-direction: column;
+        height: 500px;
+    }
+    
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+    }
+    
+    .message {
+        display: flex;
+        margin-bottom: 10px;
+    }
+    
+    .message.sent {
+        justify-content: flex-end;
+    }
+    
+    .message.received {
+        justify-content: flex-start;
+    }
+    
+    .message-content {
+        max-width: 70%;
+        word-wrap: break-word;
+    }
+    
+    .list-group-item.active {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        let lastMessageId = @(Model != null && Model.Any() ? Model.Max(m => m.MessageId) : 0);
+        let conversationId = @(selectedConversationId.HasValue ? selectedConversationId.Value : 0);
+        let isTyping = false;
+        let typingTimeout;
+
+        // Auto-scroll to bottom on load
+        $(document).ready(function() {
+            const chatMessages = document.getElementById('chatMessages');
+            if (chatMessages) {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            // Poll for new messages every 3 seconds
+            if (conversationId > 0) {
+                setInterval(pollNewMessages, 3000);
+            }
+
+            // Typing indicator
+            $('#messageInput').on('input', function() {
+                if (!isTyping) {
+                    isTyping = true;
+                    // Could send typing indicator to server here
+                }
+                clearTimeout(typingTimeout);
+                typingTimeout = setTimeout(function() {
+                    isTyping = false;
+                }, 1000);
+            });
+        });
+
+        function sendMessage(event) {
+            event.preventDefault();
+            const receiverId = $('#receiverId').val();
+            const content = $('#messageInput').val().trim();
+            
+            if (!content) return;
+
+            $.ajax({
+                url: '/Home/SendMessageAjax',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    receiverId: parseInt(receiverId),
+                    content: content
+                }),
+                success: function(response) {
+                    if (response.success) {
+                        $('#messageInput').val('');
+                        // Add message to chat immediately
+                        addMessageToChat(content, response.sentDate, true);
+                        lastMessageId = response.messageId;
+                        // Scroll to bottom
+                        const chatMessages = document.getElementById('chatMessages');
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    } else {
+                        alert('Failed to send message: ' + (response.message || 'Unknown error'));
+                    }
+                },
+                error: function() {
+                    alert('Error sending message. Please try again.');
+                }
+            });
+        }
+
+        function addMessageToChat(content, sentDate, isSent, isRead) {
+            const chatMessages = $('#chatMessages');
+            const messageClass = isSent ? 'sent' : 'received';
+            const bgClass = isSent ? 'bg-primary text-white' : 'bg-light';
+            const readStatus = isSent ? (isRead ? '<small class="text-white-50">✓✓ Read</small>' : '<small class="text-white-50">✓ Sent</small>') : '';
+            
+            const messageHtml = `
+                <div class="message ${messageClass} mb-3">
+                    <div class="message-content ${bgClass} p-2 rounded">
+                        <p class="mb-1">${escapeHtml(content)}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="${isSent ? 'text-white-50' : 'text-muted'}">${sentDate}</small>
+                            ${readStatus}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            chatMessages.append(messageHtml);
+        }
+
+        function pollNewMessages() {
+            if (conversationId <= 0) return;
+
+            $.ajax({
+                url: '/Home/GetNewMessages',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    conversationId: conversationId,
+                    lastMessageId: lastMessageId
+                }),
+                success: function(response) {
+                    if (response.success && response.messages && response.messages.length > 0) {
+                        response.messages.forEach(function(msg) {
+                            const isSent = msg.senderId == @(currentUserId ?? 0);
+                            addMessageToChat(msg.content, msg.sentDate, isSent, msg.isRead);
+                            lastMessageId = Math.max(lastMessageId, msg.messageId);
+                        });
+                        
+                        // Scroll to bottom
+                        const chatMessages = document.getElementById('chatMessages');
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                        
+                        // Refresh conversations to update unread counts
+                        refreshConversations();
+                    }
+                },
+                error: function() {
+                    // Silently fail - don't spam user with errors
+                }
+            });
+        }
+
+        function refreshConversations() {
+            // Reload the page to refresh conversation list with updated unread counts
+            window.location.reload();
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+    </script>
+}

@@ -1,0 +1,131 @@
+@model Carpool_DB_Proj.Models.UserRideDetailViewModel
+
+@{
+    ViewData["Title"] = "Manage Ride Requests";
+    Layout = "_Layout";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Ride Requests</h2>
+        <a asp-action="Main_Page" class="btn btn-outline-secondary">Back to Home</a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (Model != null && Model.myRideRequest != null && Model.myRideRequest.Any())
+    {
+        @foreach(var rideRequest in Model.myRideRequest)
+        {
+            var requesterInfo = Model.myUsers?.FirstOrDefault(u => u.UserId == rideRequest.RequesterId);
+            var locationInfo = Model.myLocationFilter?.FirstOrDefault(u => u.FilterId == rideRequest.LocationId);
+            var rideDetail = Model.myRideDetails?.FirstOrDefault(r => r.RideId == rideRequest.RideId);
+            
+            <div class="card mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0">Request #@rideRequest.RequestId</h5>
+                        <small class="text-muted">Ride ID: @rideRequest.RideId</small>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="requestActions_@rideRequest.RequestId" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-three-dots-vertical"></i> More
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="requestActions_@rideRequest.RequestId">
+                            @if (requesterInfo != null)
+                            {
+                                <li>
+                                    <a class="dropdown-item" asp-action="Messages" asp-route-conversationId="@requesterInfo.UserId">
+                                        <i class="bi bi-chat"></i> Message Passenger
+                                    </a>
+                                </li>
+                            }
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-info" href="#" onclick="viewRideDetails(@rideRequest.RideId)">
+                                    <i class="bi bi-info-circle"></i> View Ride Details
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Passenger Information</h6>
+                            @if (requesterInfo != null)
+                            {
+                                <p class="mb-1"><strong>Name:</strong> @requesterInfo.Name</p>
+                                <p class="mb-1"><strong>NU ID:</strong> @requesterInfo.NuId</p>
+                                <p class="mb-0"><strong>Email:</strong> @requesterInfo.Email</p>
+                            }
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Ride Information</h6>
+                            @if (locationInfo != null)
+                            {
+                                <p class="mb-1"><strong>Pickup:</strong> @locationInfo.PickupLocation</p>
+                                <p class="mb-1"><strong>Dropoff:</strong> @locationInfo.DropLocation</p>
+                            }
+                            @if (rideDetail != null)
+                            {
+                                <p class="mb-1"><strong>Fare:</strong> Rs. @rideDetail.Fare</p>
+                                <p class="mb-0"><strong>Leaving Time:</strong> @rideDetail.LeavingTime</p>
+                            }
+                        </div>
+                    </div>
+                    <hr />
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="badge bg-@(rideRequest.Status == "Accepted" ? "success" : rideRequest.Status == "Rejected" ? "danger" : "warning") fs-6">
+                                @rideRequest.Status
+                            </span>
+                        </div>
+                        <div>
+                            @if (rideRequest.Status != "Accepted")
+                            {
+                                <a class="btn btn-success" asp-action="AcceptRideRequest" asp-route-requestId="@rideRequest.RequestId">
+                                    <i class="bi bi-check-circle"></i> Accept Request
+                                </a>
+                            }
+                            else
+                            {
+                                <span class="text-success"><i class="bi bi-check-circle-fill"></i> Request Accepted</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <h5>No Ride Requests</h5>
+            <p>You don't have any ride requests yet. When passengers book your rides, they will appear here.</p>
+            <a asp-action="Main_Page" class="btn btn-primary">Browse Rides</a>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function viewRideDetails(rideId) {
+            // Could open a modal or navigate to ride details
+            alert('Ride ID: ' + rideId + '\nThis feature can be expanded to show full ride details.');
+        }
+    </script>
+}

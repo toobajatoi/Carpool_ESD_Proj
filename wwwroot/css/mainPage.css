@@ -1,0 +1,229 @@
+﻿:root {
+    --primary-blue: #2196F3;
+    --accent-green: #00DC93;
+    --background-dark: #303030;
+    --text-light: #ffffff;
+    --text-muted: #6c757d;
+}
+
+/*body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #ffffff;
+    color: #333;
+    line-height: 1.5;
+}*/
+
+/* Navbar */
+/*.navbar {
+    background-color: transparent;
+    padding: 1.25rem 0;
+    position: absolute;
+    width: 100%;
+    z-index: 10;
+}
+
+.navbar-brand {
+    color: var(--text-light) !important;
+    font-weight: 500;
+}
+
+.nav-link {
+    color: var(--text-light) !important;
+    padding: 0.5rem 1rem !important;
+    border-radius: 25px;
+    margin: 0 0.25rem;
+}
+
+    .nav-link.selected {
+        color: var(--accent-green) !important;
+    }*/
+
+/*.btn-signup {
+    background-color: var(--accent-green);
+    color: white;
+    border-radius: 50px;
+    padding: 0.5rem 1.25rem;
+    font-size: 0.9rem;
+}*/
+
+.hero-wrapper {
+    position: relative;
+    padding-top: 80px;
+    height: 460px;
+    overflow: hidden;
+    background: #303030 url('~/images/bg.png') center center;
+    background-size: cover;
+    display: flex;
+    align-items: center;
+}
+
+    .hero-wrapper::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1;
+    }
+
+.hero-content {
+    position: relative;
+    color: #ffffff;
+    z-index: 2;
+    text-align: center;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: bold;
+    line-height: 1.2;
+    margin: 1rem 0;
+    text-align: center;
+}
+
+.hero-subtitle {
+    font-size: 0.95rem;
+    text-align: center;
+}
+
+.container {
+    position: relative;
+}
+
+/* Search Section */
+.main-content {
+    background: white;
+    margin-top: 5rem;
+    border-radius: 24px 24px 0 0;
+    padding: 2rem 1rem;
+    position: relative;
+}
+
+.search-container {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.search-input {
+    background: #f8f9fa;
+    border: none;
+    padding: 1rem;
+    border-radius: 8px;
+    width: 100%;
+    margin: 1rem 0;
+}
+
+.time-options {
+    display: flex;
+    gap: 2rem;
+    margin: 1rem 0;
+}
+
+.set-location-btn {
+    background: var(--primary-blue);
+    color: white;
+    width: 100%;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 50px;
+    margin-top: 1rem;
+}
+
+/* Driver List */
+.driver-section {
+    padding: 0 0.5rem;
+}
+
+.driver-list {
+    max-height: 270px; /* Adjust height to fit 3 cards */
+    overflow-y: auto;
+    border: 1px solid #ccc; /* Optional, for visual clarity */
+    padding: 10px;
+}
+
+.driver-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}   
+
+.driver-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.location-icon {
+    color: var(--primary-blue);
+}
+
+/* Chat Section */
+.chat-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 2rem 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.chat-message {
+    display: flex;
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.message-time {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.message-input-container {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.message-input {
+    flex: 1;
+    background: #f8f9fa;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem;
+}
+
+/* Map Section */
+.map-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 2rem 0;
+}
+
+.map-container {
+    height: 250px;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 1rem;
+}
+
+/* Footer */
+.footer {
+    background: white;
+    padding: 1rem 0;
+    border-top: 1px solid #eee;
+}
+
+.footer-logo {
+    height: 24px;
+    width: auto;
+}

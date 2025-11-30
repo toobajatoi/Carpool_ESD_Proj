@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Carpool_DB_Project</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/Carpool_DB_Proj.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        @* <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <img src="~/images/Fastlogo.png" alt="Logo" width="30" height="24" class="d-inline-block align-text-top">
+                FastCarpool
+            </a>
+        </div> *@
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container-fluid">
+                <a class="navbar-brand d-flex align-items-center" asp-controller="Home" asp-action="Main_Page">
+                    <img src="~/images/Fastlogo.png" alt="Logo" width="30" height="24" class="d-inline-block align-text-top me-2">
+                    <span>FastCarpool</span>
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Home" asp-action="Main_Page">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Home" asp-action="Register_Car">Register Car</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Home" asp-action="BookRide">Book Ride</a>
+                        </li>
+                        @if (ViewBag.mySession != null)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Home" asp-action="MyVehicles">My Vehicles</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Home" asp-action="FavoriteRides">Favorites</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link position-relative" asp-controller="Home" asp-action="Messages">
+                                    Messages
+                                    @{
+                                        int? sessionId = ViewBag.SessionUserId as int?;
+                                        if (sessionId.HasValue)
+                                        {
+                                            try
+                                            {
+                                                var unreadCount = ViewBag.UnreadMessageCount as int? ?? 0;
+                                                if (unreadCount > 0)
+                                                {
+                                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">@unreadCount</span>
+                                                }
+                                            }
+                                            catch { }
+                                        }
+                                    }
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link position-relative" asp-controller="Home" asp-action="Notifications">
+                                    Notifications
+                                    @if (ViewBag.UnreadNotificationCount != null && (int)ViewBag.UnreadNotificationCount > 0)
+                                    {
+                                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">@ViewBag.UnreadNotificationCount</span>
+                                    }
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Home" asp-action="EmergencyContacts">Emergency</a>
+                            </li>
+                        }
+                    </ul>
+                    <ul class="navbar-nav">
+                        @if (ViewBag.mySession != null)
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <img width="25" height="24" class="me-2" src="~/images/user.png" alt="User" />
+                                    <span>@ViewBag.mySession</span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                    <li><a class="dropdown-item" asp-controller="Home" asp-action="Profile"><i class="bi bi-person"></i> Edit Profile</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger" asp-controller="Home" asp-action="Logout"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+                                </ul>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Home" asp-action="Login">Login</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            <img src="~/images/Fastlogo.png" alt="Logo" width="28" height="24">
+            &copy; 2024 - Carpool_DB_Project - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        // Real-time badge updates
+        $(document).ready(function() {
+            if ('@ViewBag.mySession' !== '') {
+                // Poll for unread notification count every 5 seconds
+                setInterval(function() {
+                    $.ajax({
+                        url: '/Home/GetUnreadNotificationCount',
+                        type: 'GET',
+                        success: function(response) {
+                            if (response && response.count !== undefined) {
+                                updateNotificationBadge(response.count);
+                            }
+                        },
+                        error: function() {
+                            // Silently fail
+                        }
+                    });
+                }, 5000);
+
+                // Poll for unread message count every 5 seconds
+                setInterval(function() {
+                    $.ajax({
+                        url: '/Home/GetUnreadMessageCount',
+                        type: 'GET',
+                        success: function(response) {
+                            if (response && response.count !== undefined) {
+                                updateMessageBadge(response.count);
+                            }
+                        },
+                        error: function() {
+                            // Silently fail
+                        }
+                    });
+                }, 5000);
+            }
+        });
+
+        function updateNotificationBadge(count) {
+            const navLink = $('.nav-link[href*="Notifications"]');
+            let badge = navLink.find('.badge');
+            if (count > 0) {
+                if (badge.length) {
+                    badge.text(count);
+                } else {
+                    navLink.append(' <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">' + count + '</span>');
+                }
+            } else {
+                badge.remove();
+            }
+        }
+
+        function updateMessageBadge(count) {
+            const navLink = $('.nav-link[href*="Messages"]');
+            let badge = navLink.find('.badge');
+            if (count > 0) {
+                if (badge.length) {
+                    badge.text(count);
+                } else {
+                    navLink.append(' <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">' + count + '</span>');
+                }
+            } else {
+                badge.remove();
+            }
+        }
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
