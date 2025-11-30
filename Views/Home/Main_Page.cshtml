@@ -1,0 +1,251 @@
+@model Carpool_DB_Proj.Models.UserRideDetailViewModel
+@{
+    ViewData["Title"] = "Main Page";
+    Layout = null;
+}
+
+@* <h1>Main Page</h1>
+<h2>@ViewBag.mySession</h2>
+<a asp-controller="Home" asp-action="Logout">Logout</a> *@
+
+<!DOCTYPE html>
+<!-- yahan pe env variables aur API URLs add kar dena -->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastCarpool - Student Carpool Service</title>
+    <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="~/css/mainPage.css" rel="stylesheet"/>
+    <!--  CSS ko same rakhna hai, koi change nahi karna -->
+</head>
+<body>
+    <!--  login/signup ke API endpoints yahan connect karein -->
+    <!-- <nav class="navbar">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <img src="logo.png" alt="FastCarpool" class="me-2">
+                FastCarpool
+            </a>
+            <div class="d-flex align-items-center gap-3">
+                <a href="#" class="nav-link">Home</a>
+                <a href="#" class="nav-link">Register Ride</a>
+                <a href="#" class="nav-link selected">Chat</a>
+                <button class="btn btn-signup">Sign Up</button>
+            </div>
+        </div>
+    </nav> -->
+    <!-- Navigation -->
+    <nav style="background-color: #f8f9fa; padding: 10px 0;">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <img src="~/images/Fastlogo.png" alt="Logo" width="30" height="24" style="margin-right: 10px;">
+                <span style="font-weight: bold;">FastCarpool</span>
+            </div>
+            <div class="d-flex gap-3">
+                <a asp-controller="Home" asp-action="Main_Page" style="text-decoration: none; color: #333;">Home</a>
+                <a asp-controller="Home" asp-action="Register_Car" style="text-decoration: none; color: #333;">Register Car</a>
+                <a asp-controller="Home" asp-action="BookRide" style="text-decoration: none; color: #333;">Book Ride</a>
+                <div class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown" style="text-decoration: none; color: #333;">
+                        <img width="25" height="24" src="~/images/user.png" alt="User" style="margin-right: 5px;">
+                        @ViewBag.mySession
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a asp-controller="Home" asp-action="Profile" class="dropdown-item">Profile</a></li>
+                        <li><a asp-controller="Home" asp-action="Logout" class="dropdown-item">Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!--  user ka data API se fetch kar ke yahan show karein -->
+    <div class="hero-wrapper">
+        <div class="container">
+            <div class="hero-content">
+                <h5>Fast Student Carpool</h5>
+                <h1 class="hero-title">Welcome to<br>Fastpool<br>@ViewBag.mySession!</h1>
+                <p class="hero-subtitle">Fast Booking · Real-Time Tracking · Secure Payments</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="container">
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            <div class="search-container">
+                <h4 class="mb-3">Find a ride</h4>
+                <form asp-controller="Home" asp-action="Main_Page" method="get">
+                    <input type="text" class="search-input" name="searchstring" placeholder="Enter your Routes" value="@ViewBag.SearchString">
+                    <div class="time-options">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="toFast" value="Yes" @(ViewBag.toFast == "Yes" || ViewBag.toFast == null ? "checked" : "")>
+                            <label class="form-check-label">To Fast</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="toFast" value="No" @(ViewBag.toFast == "No" ? "checked" : "")>
+                            <label class="form-check-label">From Fast</label>
+                        </div>
+                    </div>
+                    <button class="set-location-btn" type="submit">Search</button>
+                </form>
+            </div>
+            <!-- drivers ki list API se fetch karein, SignalR se real-time updates lagayein -->
+            <div class="driver-section">
+                
+                <br>
+                <!-- <p class="text-muted mb-4">Available Rides</p> -->
+                <h6 class="mb-3">Available Drivers In Your Location</h6>
+                <!-- <h6 class="mb-3">Available Drivers In Your Location</h6> -->
+                <div class="driver-list">
+                @if (Model != null && Model.myRideDetails != null && Model.myRideDetails.Any())
+                {
+                    @foreach (var detail in Model.myRideDetails)
+                    {
+                        @* <h6>Hello World</h6> *@
+                        if(detail != null)
+                        {
+                            var user_info = Model.myUsers?.FirstOrDefault(u => u.UserId == detail.UserId);
+                            var currentUserId = ViewBag.CurrentUserId as int?;
+                            var sessionUserId = ViewBag.SessionUserId as int?;
+                            
+                            if (user_info != null)
+                            {
+                            <div class="driver-card">
+                                <div class="card-group">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h6 class="card-title mb-0">@user_info.Name</h6>
+                                            <small class="card-text text-muted">@user_info.NuId</small>
+                                        </div>
+                                    </div>
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h6 class="card-title mb-0">Location</h6>
+                                                @if(detail.ToFast != null && detail.ToFast.ToLower() == "yes"){
+                                                <small class="card-text text-muted">
+                                                    To Fast
+                                                    </small>
+                                                }
+                                                else
+                                                {
+                                                    <small class="card-text text-muted">
+                                                        From Fast
+                                                    </small>
+                                                }
+                                            </div>
+                                        </div>
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h6 class="card-title mb-0">Routes</h6>
+                                            <small class="card-text text-muted">@detail.Routes</small>
+                                        </div>
+                                    </div>
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h6 class="card-title mb-0">Seats Available</h6>
+                                            <small class="card-text text-muted">@detail.AvailableSeats</small>
+                                        </div>
+                                    </div>
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h6 class="card-title mb-0">Fare</h6>
+                                            <small class="card-text text-muted">@detail.Fare</small>
+                                        </div>
+                                    </div>
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h6 class="card-title mb-0">Time</h6>
+                                                <small class="card-text text-muted">Leaving at : @detail.LeavingTime</small>
+                                                <small class="card-text text-muted">Class at : @detail.ClassTime</small>
+                                            </div>
+                                        </div>
+                                </div>
+                                    @{
+                                        var canBook = detail.AvailableSeats > 0 && 
+                                                      (sessionUserId == null || detail.UserId != sessionUserId.Value);
+                                    }
+                                    @if (canBook)
+                                    {
+                                        <a asp-action="BookRide" asp-route-rideid="@detail.RideId" class="btn btn-outline-secondary">Book</a>
+                                    }
+                                    else if (detail.AvailableSeats <= 0)
+                                    {
+                                        <button class="btn btn-outline-secondary" disabled>No Seats Available</button>
+                                    }
+                                    else if (sessionUserId.HasValue && detail.UserId == sessionUserId.Value)
+                                    {
+                                        <button class="btn btn-outline-secondary" disabled>Your Ride</button>
+                                    }
+                            </div>
+                            
+                            }   
+                        }
+                    }
+                }
+                else
+                {
+                    <h6>Sorry No Ride Available Right Now</h6>
+                }
+                </div>
+
+
+            @* <!--  fare calculation API yahan connect karein -->
+            <div class="d-flex justify-content-between align-items-center my-4">
+                <h6 class="mb-0">Total Fare</h6>
+                <h6 class="mb-0">Rs 600</h6>
+            </div>
+
+            <!--  live location tracking yahan setup karein -->
+            <div class="map-section">
+                <h4>Your ride</h4>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1">Carpool to Campus</h6>
+                        <small class="text-muted">Friday 10/30/2024 Drop off: 10:30 AM</small>
+                    </div>
+                    <i class="fas fa-clock text-muted"></i>
+                </div>
+                <div class="map-container">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3607.7461749284583!2d68.35550487507825!3d25.358497477782945!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x394c7069d84e32a3%3A0x323204cc6c0a423e!2s9955%2BC36%2C%20Latifabad%20Unit%20%23%2011%20Latifabad%20Unit%2011%20Latifabad%2C%20Hyderabad%2C%20Sindh%2071000%2C%20Pakistan!5e0!3m2!1sen!2s!4v1700805477061!5m2!1sen!2s"
+                            allowfullscreen=""
+                            loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+                </div>
+            </div> *@
+        </div>
+
+        @* <footer class="footer mt-5">
+            <div class="container">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <img src="logo.png" alt="FastCarpool" class="footer-logo me-2">
+                        <span>FastCarpool Connect</span>
+                    </div>
+                    <small class="text-muted">© 2024 Student Carpool Connect. All Rights Reserved.</small>
+                </div>
+            </div>
+        </footer> *@
+    </div>
+
+    <!--  bootstrap ke script ko rehne deina, backend ke scripts baad mein add karenge -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

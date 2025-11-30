@@ -1,0 +1,98 @@
+@model Carpool_DB_Proj.Models.ProfileReviewViewModel
+
+@{
+    ViewData["Title"] = "Profile";
+    Layout = "_Layout";
+    var user_obj = Model?.myUsers;
+}
+
+<h1>Profile</h1>
+
+<div>
+    @if (user_obj != null)
+    {
+        <h4>User</h4>
+        <hr />
+        <dl class="row">
+            <dt class = "col-sm-2">
+                @Html.DisplayNameFor(model => user_obj.UserId)
+            </dt>
+            <dd class = "col-sm-10">
+                @Html.DisplayFor(model => user_obj.UserId)
+            </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => user_obj.NuId)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => user_obj.NuId)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => user_obj.Name)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => user_obj.Name)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => user_obj.PhoneNumber)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => user_obj.PhoneNumber)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => user_obj.Email)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => user_obj.Email)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => user_obj.Password)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => user_obj.Password)
+        </dd>
+        </dl>
+    }
+    else
+    {
+        <p>User information not available.</p>
+    }
+    
+    @if (Model?.myReview != null && Model.myReview.Any())
+    {
+        <h4>Reviews</h4>
+        <hr />
+        <dl class="row">
+            @foreach(var review_obj in Model.myReview)
+        {
+            <dt class="col-sm-2">
+                Review ID
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => review_obj.ReviewId)
+            </dd>
+            <dt class="col-sm-2">
+                Review by
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => review_obj.UserId)
+            </dd>
+            <dt class="col-sm-2">
+                Review
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => review_obj.ReviewText)
+            </dd>
+            <dt class="col-sm-2">
+                Rating
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => review_obj.Rating)
+            </dd>
+        }
+        </dl>
+    }
+    else
+    {
+        <p>No reviews available.</p>
+    }
+</div>

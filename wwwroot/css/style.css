@@ -1,0 +1,38 @@
+﻿.login_page_img {
+    width: 686px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.login_page_image_div {
+    align-items: center;
+    display: inline-flex;
+}
+
+.login_info_1 {
+    border: 2px solid black;
+    margin-top: 100px;
+    margin-left: 65px;
+    margin-right: 65px;
+    display: inline-block !important;
+}
+
+.login_info_2 {
+    padding-left: 50px;
+    padding-right: 50px;
+    padding-top: 50px;
+    padding-bottom: 50px;
+}
+
+.Registration_div{
+    text-align: center;
+}
+
+.a_links{
+    color: black;
+}
+
+.a_links :hover {
+    color: blue;
+}

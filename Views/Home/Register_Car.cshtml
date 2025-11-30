@@ -1,0 +1,135 @@
+@model Carpool_DB_Proj.Models.RideDetail
+
+@{
+    ViewData["Title"] = "Register_Car";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <meta content="IE=edge" http-equiv="X-UA-Compatible" />
+    <title>Register Car</title>
+    <link href="https://fonts.googleapis.com/css?family=Be+Vietnam+Pro:700,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Inter:700,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/register_style.css">
+
+</head>
+
+<body>
+    <div class="email-container">
+        <div class="header">
+            <img src="~/images/Hero.png" alt="Header Image">
+            <br><br>
+            <h1>Register Your Car</h1>
+        </div>
+        <form method="post" asp-action="Register_Car">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="CarId">Enter your Car ID</label>
+                <input asp-for="CarId" type="text" id="carid" name="carid" placeholder="Car ID" required>
+                <span asp-validation-for="CarId" class="text-danger"></span>
+            </div>
+                <label asp-for="ToFast"><b>To Fast?</b></label>
+                <div class="form-check">
+                <input asp-for="ToFast" class="form-check-input" type="radio" value="Yes" required>
+                    <label class="form-check-label" asp-for="ToFast">
+                        Yes
+                    </label>
+                </div>
+                <div class="form-check">
+                <input asp-for="ToFast" class="form-check-input" type="radio" value="No" required>
+                    <label class="form-check-label" asp-for="ToFast">
+                        No
+                    </label>
+                </div>
+                <br />
+            <div class="form-group">
+                <label asp-for="AvailableSeats">Enter Seat Availability</label>
+                <input asp-for="AvailableSeats" type="number" placeholder="3" required>
+                <span asp-validation-for="AvailableSeats" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Routes">Enter Your Routes</label>
+                <input asp-for="Routes" type="text" placeholder="Malir Halt, Drigh Road, Shahrah e Faisal" required>
+                <span asp-validation-for="Routes" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Fare">Enter your Fare</label>
+                <input asp-for="Fare" type="number" required>
+                <span asp-validation-for="Fare" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ClassTime">Enter Class time</label>
+                <input asp-for="ClassTime" type="time" required>
+                <span asp-validation-for="ClassTime" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="LeavingTime">Enter Leaving time</label>
+                <input asp-for="LeavingTime" type="time" required>
+                <span asp-validation-for="LeavingTime" class="text-danger"></span>
+            </div>
+            <button type="submit" class="submit-btn">Register Your Car</button>
+        </form>
+        @* <div class="footer">
+            <p>&copy; 2024 Student Carpool Connect. All Rights Reserved.</p>
+        </div> *@
+        <div>
+
+        </div>
+    </div>
+</body>
+
+</html>
+
+@* <h1>Register_Car</h1>
+
+<h4>RideDetail</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Register_Car">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="UserId" class="control-label"></label>
+                <input asp-for="UserId" class="form-control" />
+                <span asp-validation-for="UserId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="CarId" class="control-label"></label>
+                <input asp-for="CarId" class="form-control" />
+                <span asp-validation-for="CarId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ToFast" class="control-label"></label>
+                <input asp-for="ToFast" class="form-control" />
+                <span asp-validation-for="ToFast" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Routes" class="control-label"></label>
+                <input asp-for="Routes" class="form-control" />
+                <span asp-validation-for="Routes" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Fare" class="control-label"></label>
+                <input asp-for="Fare" class="form-control" />
+                <span asp-validation-for="Fare" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="AvailableSeats" class="control-label"></label>
+                <input asp-for="AvailableSeats" class="form-control" />
+                <span asp-validation-for="AvailableSeats" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+ *@

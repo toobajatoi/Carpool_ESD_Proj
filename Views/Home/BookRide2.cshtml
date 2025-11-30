@@ -1,0 +1,93 @@
+@model Carpool_DB_Proj.Models.UserRideDetailViewModel
+
+@{
+    ViewData["Title"] = "BookRide";
+    Layout = "_Layout";
+}
+
+<h1>BookRide</h1>
+
+<div>
+    <h4>RideRequest Details</h4>
+    <hr />
+    @if (Model != null && Model.myRideRequest != null && Model.myRideRequest.Any())
+    {
+        foreach(var rideRequest in Model.myRideRequest)
+        {
+            <dl class="row">
+                <dt class="col-sm-2">Request ID</dt>
+                <dd class="col-sm-10">@rideRequest.RequestId</dd>
+
+                <dt class="col-sm-2">Ride ID</dt>
+                <dd class="col-sm-10">@rideRequest.RideId</dd>
+
+                <dt class="col-sm-2">Driver ID</dt>
+                <dd class="col-sm-10">
+                    @rideRequest.DriverId
+                    @{
+                        var driverInfo = Model.myUsers?.FirstOrDefault(u => u.UserId == rideRequest.DriverId);
+                        if (driverInfo != null)
+                        {
+                            <div>Name: @driverInfo.Name</div>
+                            <div>NU_ID: @driverInfo.NuId</div>
+                        }
+                        else
+                        {
+                            <div>Driver information not available.</div>
+                        }
+                    }
+                </dd>
+
+                <dt class="col-sm-2">Requester ID</dt>
+                <dd class="col-sm-10">
+                    @rideRequest.RequesterId
+                    @{
+                        var requesterInfo = Model.myUsers?.FirstOrDefault(u => u.UserId == rideRequest.RequesterId);
+                        if (requesterInfo != null)
+                        {
+                            <div>Name: @requesterInfo.Name</div>
+                            <div>NU_ID: @requesterInfo.NuId</div>
+                        }
+                        else
+                        {
+                            <div>Requester information not available.</div>
+                        }
+                    }
+                </dd>
+
+                <dt class="col-sm-2">Location ID</dt>
+                <dd class="col-sm-10">
+                    @rideRequest.LocationId
+                    @{
+                        var locationInfo = Model.myLocationFilter?.FirstOrDefault(u => u.FilterId == rideRequest.LocationId);
+                        if (locationInfo != null)
+                        {
+                            <div>Drop Off: @locationInfo.DropLocation</div>
+                            <div>Pick Up: @locationInfo.PickupLocation</div>
+                        }
+                        else
+                        {
+                            <div>Location information not available.</div>
+                        }
+                    }
+                </dd>
+
+                <dt class="col-sm-2">Status</dt>
+                <dd class="col-sm-10">@rideRequest.Status</dd>
+            </dl>
+            @if (rideRequest.Status != "Accepted")
+            {
+                <a class="btn btn-success" asp-action="AcceptRideRequest" asp-route-requestId="@rideRequest.RequestId">Accept</a>
+            }
+            else
+            {
+                <span class="badge bg-success">Accepted</span>
+            }
+            <br /><br />
+        }
+    }
+    else
+    {
+        <p>No ride request details available.</p>
+    }
+</div>

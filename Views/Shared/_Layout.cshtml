@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Carpool_DB_Project</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/Carpool_DB_Proj.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        @* <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <img src="~/images/Fastlogo.png" alt="Logo" width="30" height="24" class="d-inline-block align-text-top">
+                FastCarpool
+            </a>
+        </div> *@
+        <ul class="nav nav-tabs">
+            <li class="nav-item logo">
+                <img src="~/images/Fastlogo.png" alt="Logo" width="30" height="24" class="d-inline-block align-text-top">
+                FastCarpool
+            </li>
+
+            <li class="nav-item item_1">
+                <a class="nav-link active" aria-current="page" asp-controller="Home" asp-action="Main_Page">Home</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" aria-current="page" asp-controller="Home" asp-action="Register_Car">Register Car</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" aria-current="page" asp-controller="Home" asp-action="BookRide">Book Ride</a>
+            </li>
+            @if (ViewBag.mySession != null)
+            {
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle user_icon_link" data-bs-toggle="dropdown" role="button" aria-expanded="false">
+                        <img width="25" height="24" class="user_img" src="~/images/user.png" alt="Userlogo" />
+                        @ViewBag.mySession
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a asp-controller="Home" asp-action="Profile" class="dropdown-item logout_link">Profile</a></li>
+                        <li><a asp-controller="Home" asp-action="Logout" class="dropdown-item logout_link">Logout</a></li>
+                    </ul>
+                </li>
+            }
+            else
+            {
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Home" asp-action="Login">Login</a>
+                </li>
+            }
+        </ul>
+    </header>
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            <img src="~/images/Fastlogo.png" alt="Logo" width="28" height="24">
+            &copy; 2024 - Carpool_DB_Project - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

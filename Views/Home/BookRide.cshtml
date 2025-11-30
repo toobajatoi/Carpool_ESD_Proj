@@ -1,0 +1,133 @@
+@model Carpool_DB_Proj.Models.UserRideDetailViewModel
+
+@{
+    ViewData["Title"] = "BookRide";
+    Layout = "_Layout";
+}
+
+<h1>Book Ride</h1>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["InfoMessage"] != null)
+{
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        @TempData["InfoMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div>
+    <h4>Ride Request Details</h4>
+    <hr />
+    @if (Model != null && Model.myRideRequest != null && Model.myRideRequest.Any())
+    {
+        var rideRequest = Model.myRideRequest.FirstOrDefault();
+
+        if (rideRequest == null)
+        {
+            <p>No ride request details available.</p>
+        }
+        else
+        {
+        <dl class="row">
+            <dt class="col-sm-2">Request ID</dt>
+            <dd class="col-sm-10">@rideRequest.RequestId</dd>
+
+            <dt class="col-sm-2">Ride ID</dt>
+            <dd class="col-sm-10">@rideRequest.RideId</dd>
+
+            <dt class="col-sm-2">Driver ID</dt>
+            <dd class="col-sm-10">
+                @rideRequest.DriverId
+                @{
+                    var driverInfo = Model.myUsers?.FirstOrDefault(u => u.UserId == rideRequest.DriverId);
+                    if (driverInfo != null)
+                    {
+                        <div>Name: @driverInfo.Name</div>
+                        <div>NU_ID: @driverInfo.NuId</div>
+                    }
+                    else
+                    {
+                        <div>Driver information not available.</div>
+                    }
+                }
+            </dd>
+
+            <dt class="col-sm-2">Requester ID</dt>
+            <dd class="col-sm-10">
+                @rideRequest.RequesterId
+                @{
+                    var requesterInfo = Model.myUsers?.FirstOrDefault(u => u.UserId == rideRequest.RequesterId);
+                    if (requesterInfo != null)
+                    {
+                        <div>Name: @requesterInfo.Name</div>
+                        <div>NU_ID: @requesterInfo.NuId</div>
+                    }
+                    else
+                    {
+                        <div>Requester information not available.</div>
+                    }
+                }
+            </dd>
+
+            <dt class="col-sm-2">Location ID</dt>
+            <dd class="col-sm-10">
+                @rideRequest.LocationId
+                @{
+                    var locationInfo = Model.myLocationFilter?.FirstOrDefault(u => u.FilterId == rideRequest.LocationId);
+                    if (locationInfo != null)
+                    {
+                        <div>Drop Off: @locationInfo.DropLocation</div>
+                        <div>Pick Up: @locationInfo.PickupLocation</div>
+                    }
+                    else
+                    {
+                        <div>Location information not available.</div>
+                    }
+                }
+            </dd>
+
+            <dt class="col-sm-2">Status</dt>
+            <dd class="col-sm-10">
+                @if (rideRequest.Status == "Accepted")
+                {
+                    <span class="badge bg-success">Accepted</span>
+                    <br /><br />
+                    <a asp-action="Review" class="btn btn-primary">Give Review</a>
+                }
+                else
+                {
+                    <span class="badge bg-warning">@rideRequest.Status</span>
+                    <p class="text-muted mt-2">Waiting for driver to accept your request...</p>
+                }
+            </dd>
+        </dl>
+        <div class="mt-3">
+            <a asp-action="Main_Page" class="btn btn-secondary">Back to Main Page</a>
+        </div>
+        }
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <h5>No Active Ride Request</h5>
+            <p>You don't have any active ride requests. Click on a ride from the main page to book one.</p>
+            <a asp-action="Main_Page" class="btn btn-primary">Browse Available Rides</a>
+        </div>
+    }
+</div>
