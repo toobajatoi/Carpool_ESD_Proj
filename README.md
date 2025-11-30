@@ -128,7 +128,9 @@ This project is part of a university course (ESD Project - Semester 7).
 
 ## Authors
 
-- Tooba - Initial work
+- Tooba - 22K6010
+- Rameen Saleem - 22K5117
+- Hunain Memon - 22K5014
 
 ## Acknowledgments
 
