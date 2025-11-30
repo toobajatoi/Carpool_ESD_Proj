@@ -167,6 +167,8 @@ This project is part of a university course (ESD Project - Semester 7).
 ## Authors
 
 - Tooba - Initial work
+- Rameen
+- Hunain
 
 ## Acknowledgments
 
